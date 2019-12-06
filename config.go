@@ -107,11 +107,6 @@ func (log Logger) LoadConfiguration(filename string) {
 		case "console":
 			filt, good = xmlToConsoleLogWriter(filename, xmlfilt.Property, enabled)
 		case "file":
-			hostname, err := os.Hostname()
-			if err != nil {
-				hostname = ""
-			}
-			filename = strings.Replace(filename, "HOSTNAME", hostname, -1)
 			filt, good = xmlToFileLogWriter(filename, xmlfilt.Property, enabled)
 		case "xml":
 			filt, good = xmlToXMLLogWriter(filename, xmlfilt.Property, enabled)
@@ -186,6 +181,11 @@ func xmlToFileLogWriter(filename string, props []xmlProperty, enabled bool) (*Fi
 		switch prop.Name {
 		case "filename":
 			file = strings.Trim(prop.Value, " \r\n")
+			hostname, err := os.Hostname()
+			if err != nil {
+				hostname = ""
+			}
+			file = strings.Replace(file, "HOSTNAME", hostname, -1)
 		case "format":
 			format = strings.Trim(prop.Value, " \r\n")
 		case "maxlines":
