@@ -1,11 +1,13 @@
+Base on log4go.googlecode.com
 Please see http://log4go.googlecode.com/
 
+
 Installation:
-- Run `goinstall log4go.googlecode.com/hg`
+- Run `goinstall github.com/braverior/log4go`
 
 Usage:
 - Add the following import:
-import l4g "log4go.googlecode.com/hg"
+import l4g "github.com/braverior/log4go"
 
 Acknowledgements:
 - pomack

@@ -107,6 +107,11 @@ func (log Logger) LoadConfiguration(filename string) {
 		case "console":
 			filt, good = xmlToConsoleLogWriter(filename, xmlfilt.Property, enabled)
 		case "file":
+			hostname, err := os.Hostname()
+			if err != nil {
+				hostname = ""
+			}
+			filename = strings.Replace(filename, "HOSTNAME", hostname, -1)
 			filt, good = xmlToFileLogWriter(filename, xmlfilt.Property, enabled)
 		case "xml":
 			filt, good = xmlToXMLLogWriter(filename, xmlfilt.Property, enabled)
