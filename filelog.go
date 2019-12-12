@@ -5,6 +5,7 @@ package log4go
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -38,6 +39,9 @@ type FileLogWriter struct {
 
 	// Rotate hourly
 	hourly bool
+
+	// Rotate hourly
+	saving_hours int
 
 	// Keep old logfiles (.001, .002, etc)
 	rotate bool
@@ -83,6 +87,37 @@ func NewFileLogWriter(fname string, rotate bool) *FileLogWriter {
 		fmt.Fprintf(os.Stderr, "FileLogWriter(%q): %s\n", w.filename, err)
 		return nil
 	}
+
+	go func() {
+		timer := time.NewTimer(time.Second)
+		for {
+			select {
+			case <- timer.C:
+				//if not config saving hourl, exit goroutine now.
+				if w.saving_hours <= 0 {
+					return
+				}
+				matchesFiles, err := filepath.Glob(fname + ".20*")
+				if err != nil {
+					continue
+				}
+				for _, logFile := range matchesFiles {
+					fileInfo, err := os.Stat(logFile)
+					if err != nil {
+						continue
+					}
+					//If the log file was expired, will delete it.
+					if time.Now().Unix() - fileInfo.ModTime().Unix() > int64(w.saving_hours * 3600) {
+						err = os.Remove(logFile)
+						if err != nil {
+							fmt.Fprintf(os.Stderr, "FileLogWriter: Failed to delete expired log %s\n", logFile)
+						}
+					}
+				}
+				timer.Reset(time.Minute)
+			}
+		}
+	}()
 
 	go func() {
 		defer func() {
@@ -243,6 +278,13 @@ func (w *FileLogWriter) SetRotateDaily(daily bool) *FileLogWriter {
 func (w *FileLogWriter) SetRotateHourly(hourly bool) *FileLogWriter {
 	//fmt.Fprintf(os.Stderr, "FileLogWriter.SetRotateDaily: %v\n", daily)
 	w.hourly = hourly
+	return w
+}
+
+//Set file log saving hours, if file is expired, will be deleted now.
+//Recommend to using as docker.
+func (w *FileLogWriter) SetSavingHours(hours int) *FileLogWriter {
+	w.saving_hours = hours
 	return w
 }
 

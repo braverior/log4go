@@ -172,6 +172,7 @@ func xmlToFileLogWriter(filename string, props []xmlProperty, enabled bool) (*Fi
 	format := "[%D %T] [%L] (%S) %M"
 	maxlines := 0
 	maxsize := 0
+	storage_hours := -1
 	daily := false
 	rotate := false
 	hourly := true
@@ -198,6 +199,8 @@ func xmlToFileLogWriter(filename string, props []xmlProperty, enabled bool) (*Fi
 			hourly = strings.Trim(prop.Value, " \r\n") != "false"
 		case "rotate":
 			rotate = strings.Trim(prop.Value, " \r\n") != "false"
+		case "saving_hours":
+			storage_hours = strToNumSuffix(strings.Trim(prop.Value, " \r\n"), 1024)
 		default:
 			fmt.Fprintf(os.Stderr, "LoadConfiguration: Warning: Unknown property \"%s\" for file filter in %s\n", prop.Name, filename)
 		}
@@ -220,6 +223,7 @@ func xmlToFileLogWriter(filename string, props []xmlProperty, enabled bool) (*Fi
 	flw.SetRotateSize(maxsize)
 	flw.SetRotateDaily(daily)
 	flw.SetRotateHourly(hourly)
+	flw.SetSavingHours(storage_hours)
 	return flw, true
 }
 
