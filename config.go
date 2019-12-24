@@ -75,6 +75,11 @@ func (log Logger) LoadConfiguration(filename string) {
 			fmt.Fprintf(os.Stderr, "LoadConfiguration: Error: Required child <%s> for filter missing in %s\n", "level", filename)
 			bad = true
 		}
+		//Priority get log level from OS ENV
+		osLevel := os.Getenv("LOGLEVEL")
+		if osLevel != "" {
+			xmlfilt.Level = osLevel
+		}
 
 		switch xmlfilt.Level {
 		case "FINEST":
